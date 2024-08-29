@@ -6,55 +6,65 @@ from app.show_hot_keys import show
 from app.YouTubeDownloader import downloader
 
 current_keys = set()
-comand_limit = 0
+command_limit = 0
 
 
 def on_press(key):
     """
-       Основная функция которая вызывается каждый раз при нажатии любой клавиши,
-       сохраняет все нажатые клавиши в current_keys и исходя из комбинаций нажатых
-       клавиш выполняет определенное действие. 
-    """
+    This function is called every time a key is pressed.
+    It updates the set of currently pressed keys and performs actions
+    based on specific key combinations.
 
-    global comand_limit
+    Arguments:
+    key -- the key that was pressed
+    """
+    global command_limit
     current_keys.add(key)
 
-    if all(k in current_keys for k in [keyboard.KeyCode.from_char('0'), keyboard.Key.cmd]) and comand_limit < 1:
+    # Check for the combination: Cmd + '0'
+    if all(k in current_keys for k in [keyboard.KeyCode.from_char('0'), keyboard.Key.cmd]) and command_limit < 1:
         print("Binds is offline")
-        comand_limit += 1
+        command_limit += 1
         return False
 
-    elif all(k in current_keys for k in [keyboard.KeyCode.from_char('s'), keyboard.Key.ctrl]) and comand_limit < 1:
-        # Функция которая покажет управление
+    # Check for the combination: Ctrl + 's'
+    elif all(k in current_keys for k in [keyboard.KeyCode.from_char('l'), keyboard.Key.alt]) and command_limit < 1:
+        # Show the hotkey management interface
         show()
-        comand_limit += 1
+        command_limit += 1
         return
-    
-    elif all(k in current_keys for k in [keyboard.KeyCode.from_char('d'), keyboard.Key.ctrl]) and comand_limit < 1:
-        downloader()
-        comand_limit += 1
-        return
-    
-    elif all(k in current_keys for k in [keyboard.Key.alt, keyboard.Key.ctrl]) and comand_limit < 1:
-        show_urls()
-        comand_limit += 1
-        return
-        
 
+    # Check for the combination: Ctrl + 'd'
+    elif all(k in current_keys for k in [keyboard.KeyCode.from_char('d'), keyboard.Key.ctrl]) and command_limit < 1:
+        # Trigger the YouTube downloader
+        downloader()
+        command_limit += 1
+        return
+
+    # Check for the combination: Alt + Ctrl
+    elif all(k in current_keys for k in [keyboard.Key.alt, keyboard.Key.ctrl]) and command_limit < 1:
+        # Show the list of URLs
+        show_urls()
+        command_limit += 1
+        return
+
+    # Define useful URL shortcuts
     useful_urls = {
         (keyboard.Key.cmd, keyboard.KeyCode.from_char('1')): 'https://chatgpt.com/',
         (keyboard.Key.cmd, keyboard.KeyCode.from_char('2')): 'https://music.youtube.com/playlist?list=LM',
         (keyboard.Key.cmd, keyboard.KeyCode.from_char('3')): 'https://www.deepl.com/ru/translator',
-        (keyboard.Key.cmd, keyboard.KeyCode.from_char('4')): 'https://www.youtube.com/watch?v=jfKfPfyJRdk&ab_channel=LofiGirl'
+        (keyboard.Key.cmd,
+         keyboard.KeyCode.from_char('4')): 'https://www.youtube.com/watch?v=jfKfPfyJRdk&ab_channel=LofiGirl'
     }
 
-    for keys, vals in useful_urls.items():
-        if all(k in current_keys for k in keys) and comand_limit < 1 and len(current_keys) == 2:
-            open_my_url(vals)
-            comand_limit += 1
+    # Check for URL shortcuts and open the corresponding URL
+    for keys, url in useful_urls.items():
+        if all(k in current_keys for k in keys) and command_limit < 1 and len(current_keys) == 2:
+            open_my_url(url)
+            command_limit += 1
             return
-    
-    
+
+    # Define shortcuts for inserting URLs into the database
     remember_combs = {
         (keyboard.Key.ctrl, keyboard.KeyCode.from_char('r'), keyboard.KeyCode.from_char('1')): 1,
         (keyboard.Key.ctrl, keyboard.KeyCode.from_char('r'), keyboard.KeyCode.from_char('2')): 2,
@@ -63,12 +73,14 @@ def on_press(key):
         (keyboard.Key.ctrl, keyboard.KeyCode.from_char('r'), keyboard.KeyCode.from_char('5')): 5
     }
 
-    for keys, vals in remember_combs.items():
-        if all(k in current_keys for k in keys) and comand_limit < 1:
-            insert_url(vals)
-            comand_limit += 1
+    # Check for insert URL shortcuts and add the URL to the database
+    for keys, index in remember_combs.items():
+        if all(k in current_keys for k in keys) and command_limit < 1:
+            insert_url(index)
+            command_limit += 1
             return
-        
+
+    # Define shortcuts for selecting URLs from the database
     open_combs = {
         (keyboard.Key.ctrl, keyboard.KeyCode.from_char('m'), keyboard.KeyCode.from_char('1')): 1,
         (keyboard.Key.ctrl, keyboard.KeyCode.from_char('m'), keyboard.KeyCode.from_char('2')): 2,
@@ -77,28 +89,31 @@ def on_press(key):
         (keyboard.Key.ctrl, keyboard.KeyCode.from_char('m'), keyboard.KeyCode.from_char('5')): 5
     }
 
-    for keys, vals in open_combs.items():
-        if all(k in current_keys for k in keys) and comand_limit < 1:
-            select_url(vals)
-            comand_limit += 1
+    # Check for select URL shortcuts and retrieve the corresponding URL from the database
+    for keys, index in open_combs.items():
+        if all(k in current_keys for k in keys) and command_limit < 1:
+            select_url(index)
+            command_limit += 1
             return
-
-
 
 
 def on_release(key):
     """
-       Функция которая вызывается каждый раз когда пользователь отжимает любую
-       клавиши и збрасывает все пареметры. 
-    """
+    This function is called every time a key is released.
+    It resets the state of the pressed keys and command limit.
 
-    global comand_limit
+    Arguments:
+    key -- the key that was released
+    """
+    global command_limit
     global current_keys
 
     current_keys = set()
-    comand_limit = 0
+    command_limit = 0
 
 
+# Start listening for keyboard events
 listener = keyboard.Listener(on_press=on_press, on_release=on_release)
 print("Press ---> ctrl + s")
 listener.run()
+
