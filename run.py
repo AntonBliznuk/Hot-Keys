@@ -28,7 +28,7 @@ def on_press(key):
         return False
 
     # Check for the combination: Ctrl + 's'
-    elif all(k in current_keys for k in [keyboard.KeyCode.from_char('l'), keyboard.Key.alt]) and command_limit < 1:
+    elif all(k in current_keys for k in [keyboard.KeyCode.from_char('j'), keyboard.Key.ctrl]) and command_limit < 1:
         # Show the hotkey management interface
         show()
         command_limit += 1
@@ -114,6 +114,6 @@ def on_release(key):
 
 # Start listening for keyboard events
 listener = keyboard.Listener(on_press=on_press, on_release=on_release)
-print("Press ---> ctrl + s")
+print("Press ---> ctrl + j")
 listener.run()
 
